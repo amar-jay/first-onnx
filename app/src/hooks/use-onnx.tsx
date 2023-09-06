@@ -1,16 +1,13 @@
 import ort, { InferenceSession } from 'onnxruntime-web'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
+import AppContext, { AppContextType, State } from '../components/context'
 import { EMOTIONS, sigmoid } from '../lib/utils'
-import { loadTokenizer } from './tokenizer'
-const MODEL_NAME = 'model.onnx'
-type State = 'downloading' | 'warming-up' |'ready' | 'error' | 'unknown'
+import BertTokenizer from './tokenizer'
+const MODEL_NAME = '/models/classifier.onnx'
 
 type Emoji = [emotion: string, probability: number]
+const tokenizer = new BertTokenizer()
 
-const tokenizer = await loadTokenizer().catch((e) => {
-	console.error(e)
-	throw e
-})
 async function inference(session: InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
 	const start = performance.now();
 	const encoded = await tokenizer.tokenize(text)
@@ -51,26 +48,57 @@ const model_input = (encoded: number[]) => {
 	}
 }
 
-export function useOnnxModel(){
-	const [state, setState] = useState<State>('unknown')
+export function useOnnxModel(store: AppContextType, setStore: React.Dispatch<React.SetStateAction<AppContextType>>){
+	const {state} = React.useContext(AppContext)
+
+	const setState = React.useCallback((state: State) => (
+		setStore({
+			...store,
+			state
+		})
+	), [store, setStore])
+
+	// ort.env.wasm.numThreads = 3
+	// ort.env.wasm.simd = true
+
 	const session = useRef<Promise<InferenceSession>|undefined>()
 
 	useEffect(() => {
-		setState('downloading')
-		session.current = ort.InferenceSession.create(MODEL_NAME, {
-			// webgl: true,
-			executionProviders: ['webgl'],
-			graphOptimizationLevel: 'all',
+		// do not download if already downloaded
+		if (session.current) {
+			return
+		}
+
+		const options:InferenceSession.SessionOptions = {
+			executionProviders: ['wasm'], 
+			graphOptimizationLevel: 'all'
+		};
+
+		if (!tokenizer.loaded) {
+			try {
+				tokenizer.load()
+			} finally {
+				setState('downloading')
+				session.current = InferenceSession.create(MODEL_NAME, options)
+
+				session.current.then((s) => {
+					setState('warming-up')
+					for (let i = 0; i < 10; i++){
+						console.log("Warming up")
+						inference(s, "just warming up")
+					}
+
+				setState('ready')
 		})
-		session.current.then((s) => {
-			setState('warming-up')
-			inference(s, "just warming up")
-			setState('ready')
-		})
-	}, [])
+			}
+		}
+
+	}, [setState])
+
+
 	return {
 		state,
-		session
+		session: session.current
 	}
 
 }

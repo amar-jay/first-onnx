@@ -132,6 +132,7 @@ export interface Token {
 export class BertTokenizer {
   private vocab: string[];
   private trie: Trie;
+  public loaded = false;
 
   /**
    * Load the vacabulary file and initialize the Trie for lookup.
@@ -145,6 +146,8 @@ export class BertTokenizer {
       const word = this.vocab[vocabIndex];
       this.trie.insert(word, 1, vocabIndex);
     }
+
+    this.loaded = true;
   }
 
   private async loadVocab(): Promise<[]> {
@@ -294,3 +297,5 @@ export async function loadTokenizer(): Promise<BertTokenizer> {
   await tokenizer.load();
   return tokenizer;
 }
+
+export default BertTokenizer;
