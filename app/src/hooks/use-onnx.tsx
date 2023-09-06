@@ -1,6 +1,6 @@
 import ort, { InferenceSession } from 'onnxruntime-web'
 import { useEffect, useRef, useState } from 'react'
-import { EMOTIONS, sigmoid } from '../utils'
+import { EMOTIONS, sigmoid } from '../lib/utils'
 import { loadTokenizer } from './tokenizer'
 const MODEL_NAME = 'model.onnx'
 type State = 'downloading' | 'warming-up' |'ready' | 'error' | 'unknown'
