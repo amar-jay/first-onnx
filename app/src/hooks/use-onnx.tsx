@@ -7,7 +7,10 @@ type State = 'downloading' | 'warming-up' |'ready' | 'error' | 'unknown'
 
 type Emoji = [emotion: string, probability: number]
 
-const tokenizer = await loadTokenizer()
+const tokenizer = await loadTokenizer().catch((e) => {
+	console.error(e)
+	throw e
+})
 async function inference(session: InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
 	const start = performance.now();
 	const encoded = await tokenizer.tokenize(text)
