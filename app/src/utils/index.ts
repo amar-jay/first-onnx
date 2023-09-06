@@ -1,6 +1,6 @@
-export function sigmoid(t: bigint | number) {
-  const sig = 1/(1+Math.pow(Math.E, -new Number(t)));
-  return sig*100 as any;
+export function sigmoid<T>(t: T): T {
+  const sig = 1/(1+Math.pow(Math.E, -t));
+  return sig*100 as T;
 }
 
 export const EMOTIONS = [

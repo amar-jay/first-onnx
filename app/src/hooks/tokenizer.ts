@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 /**
  * This tokenizer is a copy of 
  * https://raw.githubusercontent.com/tensorflow/tfjs-models/master/qna/src/bert_tokenizer.ts
@@ -40,6 +42,7 @@ class TrieNode {
 
   getWord(): [string[], number, number] {
     const output: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let node: TrieNode = this;
 
     while (node != null) {

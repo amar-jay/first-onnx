@@ -1,13 +1,14 @@
 import ort, { InferenceSession } from 'onnxruntime-web'
 import { useEffect, useRef, useState } from 'react'
-import { tokenizer } from './tokenizer'
-import { sigmoid, EMOTIONS } from '../utils'
+import { EMOTIONS, sigmoid } from '../utils'
+import { loadTokenizer } from './tokenizer'
 const MODEL_NAME = 'model.onnx'
 type State = 'downloading' | 'warming-up' |'ready' | 'error' | 'unknown'
 
-type Emoji = [emotion: string, probability: bigint | number]
+type Emoji = [emotion: string, probability: number]
 
-async function inference(session: InferenceSession): [duration: number, Emoji[]] {
+const tokenizer = await loadTokenizer()
+async function inference(session: InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
 	const start = performance.now();
 	const encoded = await tokenizer.tokenize(text)
 
@@ -21,8 +22,8 @@ async function inference(session: InferenceSession): [duration: number, Emoji[]]
 	const probabilities = output['output'].data.map(sigmoid)
 
 	const resultList:Emoji[] = []
-	for (let i in probabilities) {
-		resultList.push([EMOTIONS[i], probabilities[i]])
+	for (const i in probabilities) {
+		resultList.push([EMOTIONS[i], probabilities[i] as number])
 	}
 
 	return [duration,resultList];
@@ -60,11 +61,13 @@ export function useOnnxModel(){
 		})
 		session.current.then((s) => {
 			setState('warming-up')
-			inference(s)
+			inference(s, "just warming up")
+			setState('ready')
 		})
 	}, [])
 	return {
-		state
+		state,
+		session
 	}
 
 }

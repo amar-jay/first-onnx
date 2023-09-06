@@ -27,11 +27,12 @@ npm run dev
 ```
 
 
-
 ## Model Information
 - Model Used: `microsoft/xtremedistil-l6-h256-uncased`
 - ONNX Model Location: `onnx/model.py`
 - Exported Classifier Models: `onnx/classifier.onnx` and `onnx/classifier_int8.onnx`
+- Colab Notebook: [notebook](https://colab.research.google.com/drive/1XSZRQf1T1ZZcJEEo4ofNtS4g8BNadjbR?usp=sharing)
+
 
 ## Contributing
 Feel free to contribute to this project by opening issues or submitting pull requests. We welcome any enhancements, bug fixes, or new features that can improve this basic ONNX implementation.
