@@ -1,7 +1,7 @@
 <div id="header" align="center">
    <div id="badges"> 
       
-      🚧 Under development
+      🚧 Under Development
 
    </div>
 </div>
