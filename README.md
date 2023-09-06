@@ -1,4 +1,4 @@
-<div align="center">
+<div id="header" align="center">
    <div id="badges"> 🚧 Under development </div>
 </div>
 
