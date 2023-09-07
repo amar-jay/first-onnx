@@ -1,3 +1,4 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import React, { Suspense } from 'react';
 import './App.css';
 import { useOnnxModel } from './hooks/use-onnx';
@@ -13,10 +14,18 @@ function App() {
   return (
     <>
     {!wasmSupported ? "WASM not Supported" : (
-      state != 'ready' ? state : (
+      state != 'ready' ? (
+        <div className='flex flex-col gap-3 items-center justify-center'>
+          <LoadingOutlined spin /> :
+            <p>{state}</p>
+        </div>
+        ) : (
           <Suspense fallback={<div>Loading...</div>}>
             {
-              session ? <Index session={session}/> : "Loading model"
+              session ? <Index session={session}/> : <div className='flex flex-col gap-3 items-center justify-center'>
+                <LoadingOutlined spin /> :
+                <p>Loading model</p>
+              </div>
             }
           </Suspense>
         )

@@ -1,8 +1,9 @@
 // import react from '@vitejs/plugin-react-swc'
 import path from 'path';
 import { defineConfig } from 'vite';
-import topLevelAwait from "vite-plugin-top-level-await";
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import topLevelAwait from "vite-plugin-top-level-await";
+// import vercel from 'vite-plugin-vercel';
 import wasm from "vite-plugin-wasm";
 
 // https://vitejs.dev/config/
@@ -10,7 +11,8 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [
     react(),
-    wasm(),
+    // vercel(),
+    // wasm(),
     topLevelAwait(),
      viteStaticCopy({
       targets: [
