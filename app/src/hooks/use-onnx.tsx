@@ -32,20 +32,20 @@ async function inference(session: ort.InferenceSession, text: string): Promise<[
 
 const model_input = (encoded: number[]) => {
   var input_ids = new Array(encoded.length+2);
-  var attention_mask = new Array(encoded.length+2);
-  var token_type_ids = new Array(encoded.length+2);
+  var attention_mask = new Array(encoded.length+2).fill(BigInt(1));
+  var token_type_ids = new Array(encoded.length+2).fill(BigInt(0));
   input_ids[0] = BigInt(101);
-  attention_mask[0] = BigInt(1);
-  token_type_ids[0] = BigInt(0);
+//   attention_mask[0] = BigInt(1);
+//   token_type_ids[0] = BigInt(0);
   var i = 0;
   for(; i < encoded.length; i++) { 
     input_ids[i+1] = BigInt(encoded[i]);
-    attention_mask[i+1] = BigInt(1);
-    token_type_ids[i+1] = BigInt(0);
+    // attention_mask[i+1] = BigInt(1);
+    // token_type_ids[i+1] = BigInt(0);
   }
   input_ids[i+1] = BigInt(102);
-  attention_mask[i+1] = BigInt(1);
-  token_type_ids[i+1] = BigInt(0);
+//   attention_mask[i+1] = BigInt(1);
+//   token_type_ids[i+1] = BigInt(0);
   const sequence_length = input_ids.length;
   input_ids = new ort.Tensor('int64', BigInt64Array.from(input_ids), [1,sequence_length]);
   attention_mask = new ort.Tensor('int64', BigInt64Array.from(attention_mask), [1,sequence_length]);
