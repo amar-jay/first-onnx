@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     // vercel(),
-    // wasm(),
+    wasm(),
     topLevelAwait(),
      viteStaticCopy({
       targets: [
