@@ -15,15 +15,15 @@ function App() {
     <>
     {!wasmSupported ? "WASM not Supported" : (
       state != 'ready' ? (
-        <div className='flex flex-col gap-3 items-center justify-center'>
-          <LoadingOutlined spin /> :
-            <p>{state}</p>
+        <div className='flex flex-col gap-3 items-center justify-center text-sm'>
+          <LoadingOutlined spin /> 
+            <p className={state == "error" ? "text-red-500": ""}>{state}</p>
         </div>
         ) : (
           <Suspense fallback={<div>Loading...</div>}>
             {
               session ? <Index session={session}/> : <div className='flex flex-col gap-3 items-center justify-center'>
-                <LoadingOutlined spin /> :
+                <LoadingOutlined spin /> 
                 <p>Loading model</p>
               </div>
             }
