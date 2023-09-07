@@ -12,8 +12,8 @@ export function sigmoid<T>(t: T): T {
 }
 
 export const EMOTIONS = [
-  'admiration 👏',
   'amusement 😂',
+  'admiration 💖',
   'anger 😡',
   'annoyance 😒',
   'approval 👍',

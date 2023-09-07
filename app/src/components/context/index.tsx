@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-export type State = 'downloading' | 'warming-up' |'ready' | 'error' | 'unknown'
+export type State = 'downloading model'| 'initializing model' | 'warming-up model' |'ready' | 'error' | 'unknown'
 
 export type AppContextType = {
 	text: string;

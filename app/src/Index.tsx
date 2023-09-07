@@ -1,5 +1,5 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import {useOnnxModel} from './hooks/use-onnx'
+import { InferenceSession } from 'onnxruntime-web';
 import React, { useCallback, useEffect } from 'react';
 import AppContext, { AppContextType } from './components/context';
 import { Graph, GraphDataType } from './components/graph';
@@ -8,20 +8,18 @@ import { SpeechToText } from './components/speech-to-text';
 import { StatusTrigger } from './components/status';
 import { Button } from "./components/ui/button";
 import { Textarea } from './components/ui/textarea';
+import { inference } from './hooks/use-onnx';
 
 const GITHUB_URL = 'https://github.com/amar-jay/first-onnx'
-let SAMPLE_DATA_LABELS = ["Happy 😂", "Sad 🥹", "Angry 😡", "Neutral 😐", "Surprised 🫢"]
-SAMPLE_DATA_LABELS = SAMPLE_DATA_LABELS.map((label) => label.split(" ")[1])
 
-export function Index() {
+export default function Index({session} : {session: InferenceSession}) {
   const [store, setStore] = React.useState<AppContextType>({
-    text: "",
+    text: "What a beautiful day!",
     loading: false,
     state: 'unknown',
   })
   const [graphData, setGraphData] = React.useState<GraphDataType[]>([])
 
-  const {session, state} = useOnnxModel(store, setStore)
   const setText = useCallback((text: string) => (
     setStore({
       ...store,
@@ -38,31 +36,46 @@ export function Index() {
 
 
   useEffect(() => {
-    const SAMPLE_DATA = SAMPLE_DATA_LABELS.map((label) => ({
-    name: label,
-    value: Math.floor(Math.random() * 5000) + 1000})
-    )
-    setGraphData(SAMPLE_DATA)
-  }, [store.text])
-
-  useEffect(() => {
     if (store.loading) {
-      setTimeout(() => {
-          const SAMPLE_DATA = SAMPLE_DATA_LABELS.map((label) => ({
-            name: label,
-            value: Math.floor(Math.random() * 5000) + 1000})
-          )
-        setGraphData(SAMPLE_DATA)
-        toggleLoading()
+      const s = setTimeout(() => {
+        inference(session, store.text)
+        .then(([, emojis]) => {
+          const SAMPLE_DATA = emojis.map((emoji) => {
+            return({
+            name: emoji.emotion.split(" ")[1],
+            value: emoji.probability * 10000
+          })})
+          setGraphData(SAMPLE_DATA)
+        }).then(() => toggleLoading())
       }, 500)
+
+      return () => clearTimeout(s)
     }
-  }, [store.loading, toggleLoading])
+  }, [store.loading, toggleLoading, session, store.text])
+
+  useEffect(
+    () => {
+      const interval = setTimeout(() => {
+        inference(session, store.text)
+
+        .then(([, emojis]) => {
+          const SAMPLE_DATA = emojis.map((emoji) => {
+            return({
+            name: emoji.emotion.split(" ")[1],
+            value: emoji.probability * 10000
+          })})
+          setGraphData(SAMPLE_DATA)
+        })
+      }, 1000)
+
+      return () => clearInterval(interval)
+    },[store.text, session]
+  )
 
 
 	return (
 
     <AppContext.Provider value={store}>
-      {JSON.stringify(session)}{state}
       <SpeechToText setText={setText}/>
       <ShareButton/>
     <div className='container h-screen flex items-center flex-col justify-center'>

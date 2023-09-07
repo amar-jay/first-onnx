@@ -1,11 +1,11 @@
-import * as ort  from 'onnxruntime-web'
+import * as ort from 'onnxruntime-web'
 import React, { useEffect, useRef } from 'react'
-import AppContext, { AppContextType, State } from '../components/context'
+import { State } from '../components/context'
 import { EMOTIONS, sigmoid } from '../lib/utils'
 import BertTokenizer from './tokenizer'
 const MODEL_NAME = '/models/classifier.onnx'
 
-type Emoji = [emotion: string, probability: number]
+type Emoji = {emotion: string, probability: number}
 const tokenizer = new BertTokenizer()
 
 export async function inference(session: ort.InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
@@ -23,50 +23,48 @@ export async function inference(session: ort.InferenceSession, text: string): Pr
 
 	const resultList:Emoji[] = []
 	for (const i in probabilities) {
-		resultList.push([EMOTIONS[i], probabilities[i] as number])
+		resultList.push({
+			emotion: EMOTIONS[i], 
+			probability: probabilities[i] as number
+		})
 	}
 
 	return [duration,resultList];
 
 }
 
+type Tensor = ort.TypedTensor<"int64"> | Array<bigint>
 const model_input = (encoded: number[]) => {
-  var inputIds = new Array(encoded.length+2);
-  var attentionMask = new Array(encoded.length+2).fill(BigInt(1));
-  var tokenTypeIds = new Array(encoded.length+2).fill(BigInt(0));
+  let inputIds: Tensor = new Array(encoded.length+2);
+  let attentionMask:Tensor = new Array(encoded.length+2).fill(BigInt(1));
+  let tokenTypeIds:Tensor = new Array(encoded.length+2).fill(BigInt(0));
 
-  inputIds[0] = BigInt(101);
-  var i = 0;
+  inputIds[0] = BigInt(101);
+  let i = 0;
   for(; i < encoded.length; i++) { 
     inputIds[i+1] = BigInt(encoded[i]);
   }
 
-  inputIds[i+1] = BigInt(102);
+  inputIds[i+1] = BigInt(102);
   const sequence_length = inputIds.length;
   inputIds = new ort.Tensor('int64', BigInt64Array.from(inputIds), [1,sequence_length]);
   attentionMask = new ort.Tensor('int64', BigInt64Array.from(attentionMask), [1,sequence_length]);
   tokenTypeIds = new ort.Tensor('int64', BigInt64Array.from(tokenTypeIds), [1,sequence_length]);
   return {
-    inputIds,
-    attentionMask,
-    tokenTypeIds
+    input_ids: inputIds,
+    attention_mask: attentionMask,
+    token_type_ids: tokenTypeIds
   }
 }
 
-export function useOnnxModel(store: AppContextType, setStore: React.Dispatch<React.SetStateAction<AppContextType>>){
-	const {state} = React.useContext(AppContext)
-
-	const setState =(state: State) => (
-		setStore({
-			...store,
-			state
-		})
-	)
+export function useOnnxModel(){
+	const [state, setState] = React.useState<State>('unknown')
 
 	// ort.env.wasm.numThreads = 3
 	// ort.env.wasm.simd = true
 
 	const session = useRef<Promise<ort.InferenceSession>|undefined>()
+	const awaitedSession = useRef<ort.InferenceSession|undefined>()
 
 	useEffect(() => {
 		// do not download if already downloaded
@@ -85,26 +83,34 @@ export function useOnnxModel(store: AppContextType, setStore: React.Dispatch<Rea
 				session.current = ort.InferenceSession.create(MODEL_NAME, options)
 			} 
 			finally {
-				setState('downloading')
+				setState('downloading model')
 
-				session.current?.then((s) => {
-					setState('warming-up')
+				session.current?.then((s) =>  {
+					setState('initializing model')
+					awaitedSession.current = s
+					return s
+				}).then((s) => {
+					const vals: Promise<[duration: number, emojis: Emoji[]]>[] = []
+					setState('warming-up model')
 					for (let i = 0; i < 10; i++){
-						const vals = inference(s, "just warming up")
-						console.log("Warming up", vals)
+						const val = inference(s, "just warming up")
+						vals.push(val)
 					}
-
+					return Promise.allSettled(vals)
+				}).then(() => {
 				setState('ready')
-		})
+				}).catch((e) => {
+					console.error(e)
+					setState('error')
+				})
 			}
 		}
-
-	}, [])
+	}, [setState])
 
 
 	return {
 		state,
-		session: session.current
+		session: awaitedSession.current
 	}
 
 }
