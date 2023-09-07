@@ -8,7 +8,7 @@ const MODEL_NAME = '/models/classifier.onnx'
 type Emoji = [emotion: string, probability: number]
 const tokenizer = new BertTokenizer()
 
-async function inference(session: ort.InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
+export async function inference(session: ort.InferenceSession, text: string): Promise<[duration: number, emojis: Emoji[]]> {
 	const start = performance.now();
 	const encoded = await tokenizer.tokenize(text)
 
@@ -31,29 +31,25 @@ async function inference(session: ort.InferenceSession, text: string): Promise<[
 }
 
 const model_input = (encoded: number[]) => {
-  var input_ids = new Array(encoded.length+2);
-  var attention_mask = new Array(encoded.length+2).fill(BigInt(1));
-  var token_type_ids = new Array(encoded.length+2).fill(BigInt(0));
-  input_ids[0] = BigInt(101);
-//   attention_mask[0] = BigInt(1);
-//   token_type_ids[0] = BigInt(0);
+  var inputIds = new Array(encoded.length+2);
+  var attentionMask = new Array(encoded.length+2).fill(BigInt(1));
+  var tokenTypeIds = new Array(encoded.length+2).fill(BigInt(0));
+
+  inputIds[0] = BigInt(101);
   var i = 0;
   for(; i < encoded.length; i++) { 
-    input_ids[i+1] = BigInt(encoded[i]);
-    // attention_mask[i+1] = BigInt(1);
-    // token_type_ids[i+1] = BigInt(0);
+    inputIds[i+1] = BigInt(encoded[i]);
   }
-  input_ids[i+1] = BigInt(102);
-//   attention_mask[i+1] = BigInt(1);
-//   token_type_ids[i+1] = BigInt(0);
-  const sequence_length = input_ids.length;
-  input_ids = new ort.Tensor('int64', BigInt64Array.from(input_ids), [1,sequence_length]);
-  attention_mask = new ort.Tensor('int64', BigInt64Array.from(attention_mask), [1,sequence_length]);
-  token_type_ids = new ort.Tensor('int64', BigInt64Array.from(token_type_ids), [1,sequence_length]);
+
+  inputIds[i+1] = BigInt(102);
+  const sequence_length = inputIds.length;
+  inputIds = new ort.Tensor('int64', BigInt64Array.from(inputIds), [1,sequence_length]);
+  attentionMask = new ort.Tensor('int64', BigInt64Array.from(attentionMask), [1,sequence_length]);
+  tokenTypeIds = new ort.Tensor('int64', BigInt64Array.from(tokenTypeIds), [1,sequence_length]);
   return {
-    input_ids: input_ids,
-    attention_mask: attention_mask,
-    token_type_ids:token_type_ids
+    inputIds,
+    attentionMask,
+    tokenTypeIds
   }
 }
 
@@ -94,8 +90,8 @@ export function useOnnxModel(store: AppContextType, setStore: React.Dispatch<Rea
 				session.current?.then((s) => {
 					setState('warming-up')
 					for (let i = 0; i < 10; i++){
-						console.log("Warming up")
-						inference(s, "just warming up")
+						const vals = inference(s, "just warming up")
+						console.log("Warming up", vals)
 					}
 
 				setState('ready')
