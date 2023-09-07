@@ -1,11 +1,13 @@
 import { LoadingOutlined } from '@ant-design/icons';
+import {useOnnxModel} from './hooks/use-onnx'
 import React, { useCallback, useEffect } from 'react';
 import AppContext, { AppContextType } from './components/context';
 import { Graph, GraphDataType } from './components/graph';
+import { ShareButton } from './components/share';
+import { SpeechToText } from './components/speech-to-text';
 import { StatusTrigger } from './components/status';
 import { Button } from "./components/ui/button";
 import { Textarea } from './components/ui/textarea';
-import { useOnnxModel } from './hooks/use-onnx';
 
 const GITHUB_URL = 'https://github.com/amar-jay/first-onnx'
 let SAMPLE_DATA_LABELS = ["Happy 😂", "Sad 🥹", "Angry 😡", "Neutral 😐", "Surprised 🫢"]
@@ -61,6 +63,8 @@ export function Index() {
 
     <AppContext.Provider value={store}>
       {JSON.stringify(session)}{state}
+      <SpeechToText setText={setText}/>
+      <ShareButton/>
     <div className='container h-screen flex items-center flex-col justify-center'>
     <div className='flex flex-grow flex-col items-center justify-center gap-8 w-full'>
       <h1 className="">B. E. R. T.</h1>
