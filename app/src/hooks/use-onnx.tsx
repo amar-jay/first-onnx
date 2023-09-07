@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react'
 import { State } from '../components/context'
 import { EMOTIONS, sigmoid } from '../lib/utils'
 import BertTokenizer from './tokenizer'
-const MODEL_NAME = '/models/classifier.onnx'
+const MODEL_NAME = '/models/classifier_int8.onnx'
 
 type Emoji = {emotion: string, probability: number}
 const tokenizer = new BertTokenizer()
