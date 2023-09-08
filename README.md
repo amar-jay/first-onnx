@@ -1,11 +1,3 @@
-<div id="header" align="center">
-   <div id="badges"> 
-      
-      🚧 Under Development
-
-   </div>
-</div>
-
 # first-onnx
 A basic implementation of ONNX using the microsoft/xtremedistil-l6-h256-uncased model.
 
