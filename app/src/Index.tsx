@@ -62,7 +62,7 @@ export default function Index({session} : {session: InferenceSession}) {
           const SAMPLE_DATA = emojis.map((emoji) => {
             return({
             name: emoji.emotion.split(" ")[1],
-            value: emoji.probability * 10000
+            value: emoji.probability
           })})
           setGraphData(SAMPLE_DATA)
         })
