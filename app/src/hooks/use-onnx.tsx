@@ -88,12 +88,11 @@ export function useOnnxModel(){
 
 		if (!tokenizer.loaded) {
 			try {
+				setState('downloading model')
 				tokenizer.load()
 				session.current = ort.InferenceSession.create(MODEL_URI, options)
 			} 
 			finally {
-				setState('downloading model')
-
 				session.current?.then((s) =>  {
 					setState('initializing model')
 					awaitedSession.current = s
