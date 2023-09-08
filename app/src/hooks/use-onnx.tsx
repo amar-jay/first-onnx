@@ -3,7 +3,16 @@ import React, { useEffect, useRef } from 'react'
 import { State } from '../components/context'
 import { EMOTIONS, sigmoid } from '../lib/utils'
 import BertTokenizer from './tokenizer'
-const MODEL_NAME = '/models/classifier_int8.onnx'
+
+/**
+ * Fetching the model from github since vercel cannot handle large files but 
+ * uses local model on development
+ */
+let MODEL_URI = 'https://media.githubusercontent.com/media/amar-jay/first-onnx/main/app/public/models/classifier.onnx'
+if (process.env.NODE_ENV === 'development') {
+	MODEL_URI = '/models/classifier.onnx'
+}
+
 
 type Emoji = {emotion: string, probability: number}
 const tokenizer = new BertTokenizer()
@@ -80,7 +89,7 @@ export function useOnnxModel(){
 		if (!tokenizer.loaded) {
 			try {
 				tokenizer.load()
-				session.current = ort.InferenceSession.create(MODEL_NAME, options)
+				session.current = ort.InferenceSession.create(MODEL_URI, options)
 			} 
 			finally {
 				setState('downloading model')
