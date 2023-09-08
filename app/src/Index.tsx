@@ -40,12 +40,12 @@ export default function Index({session} : {session: InferenceSession}) {
       const s = setTimeout(() => {
         inference(session, store.text)
         .then(([, emojis]) => {
-          const SAMPLE_DATA = emojis.map((emoji) => {
+          const DATA = emojis.map((emoji) => {
             return({
             name: emoji.emotion.split(" ")[1],
-            value: emoji.probability * 10000
+            value: emoji.probability
           })})
-          setGraphData(SAMPLE_DATA)
+          setGraphData(DATA)
         }).then(() => toggleLoading())
       }, 500)
 
